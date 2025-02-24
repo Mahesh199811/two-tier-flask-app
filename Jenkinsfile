@@ -1,11 +1,21 @@
+@Library("Shared") _
 pipeline{
     
-    agent any;
+    agent { label "dev"};
     
     stages{
         stage("Code Clone"){
             steps{
-               git url: "https://github.com/LondheShubham153/two-tier-flask-app.git", branch: "master"
+               script{
+                   clone("https://github.com/LondheShubham153/two-tier-flask-app.git", "master")
+               }
+            }
+        }
+        stage("Trivy File System Scan"){
+            steps{
+                script{
+                    trivy_fs()
+                }
             }
         }
         stage("Build"){
@@ -22,17 +32,9 @@ pipeline{
         }
         stage("Push to Docker Hub"){
             steps{
-                withCredentials([usernamePassword(
-                    credentialsId:"dockerHubCreds",
-                    passwordVariable: "dockerHubPass",
-                    usernameVariable: "dockerHubUser"
-                )]){
-                
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker image tag two-tier-flask-app ${env.dockerHubUser}/two-tier-flask-app"
-                sh "docker push ${env.dockerHubUser}/two-tier-flask-app:latest"
-            
-                }    
+                script{
+                    docker_push("dockerHubCreds","two-tier-flask-app")
+                }  
             }
         }
         stage("Deploy"){
@@ -41,5 +43,23 @@ pipeline{
             }
         }
     }
-    
+
+post{
+        success{
+            script{
+                emailext from: 'mentor@trainwithshubham.com',
+                to: 'mentor@trainwithshubham.com',
+                body: 'Build success for Demo CICD App',
+                subject: 'Build success for Demo CICD App'
+            }
+        }
+        failure{
+            script{
+                emailext from: 'mentor@trainwithshubham.com',
+                to: 'mentor@trainwithshubham.com',
+                body: 'Build Failed for Demo CICD App',
+                subject: 'Build Failed for Demo CICD App'
+            }
+        }
+    }
 }
