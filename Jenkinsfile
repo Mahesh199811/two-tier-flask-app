@@ -11,7 +11,7 @@ pipeline
         }
          stage("Code Build"){
             steps{
-                sh "docker build -t maheshgadhave82/flask-app:latest ."
+                sh "docker build -t flask-app:latest ."
                 
             }
         }
