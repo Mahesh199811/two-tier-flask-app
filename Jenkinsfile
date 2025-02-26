@@ -39,4 +39,23 @@ pipeline
             }
         }
     }
+    
+    post{
+        success{
+            emailext(
+                subject:"Build successful",
+                body: "your build is successful",
+                to:"maheshgadhave82@gmail.com"
+                )
+            
+        }
+        failure{
+            emailext(
+                subject:"Build Failed",
+                body: "Error: Build Failed",
+                to:"maheshgadhave82@gmail.com"
+                )
+            
+        }
+    }
 }
